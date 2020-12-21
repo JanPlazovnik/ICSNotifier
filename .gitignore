@@ -1,0 +1,13 @@
+# Logs
+*.log
+*.txt
+npm-debug.log*
+dist/
+imp/
+
+*.ics
+*.old
+
+# Dependency directories
+node_modules/
+.env
