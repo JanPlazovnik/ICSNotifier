@@ -53,6 +53,7 @@ function checkNextEvent () {
   if (ICSData.length <= 0) return triggerFileUpdateReminder();
 
   const currentItem = ICSData[0];
+  log(`Processing: ${currentItem.summary}`)
   const start = moment(currentItem.start);
   const current = moment();
   const diff = start.diff(current, 'm');
