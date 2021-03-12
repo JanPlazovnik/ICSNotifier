@@ -1,9 +1,10 @@
 import path from "path";
 import ical from "ical";
 import moment from "moment";
-import notifier from "node-notifier";
+import { WindowsToaster } from "node-notifier";
 import { ICSParsedData, ICSDataObject } from './interfaces';
 
+const notifier = new WindowsToaster();
 const refreshTime = process.env.INTERVAL && parseInt(process.env.INTERVAL) || 5;
 
 let ICSData = Object.values(ical.parseFile(path.resolve(__dirname) + "/files/calendar.ics")) as ICSParsedData;
@@ -17,8 +18,8 @@ function notify(title: string, message: string) {
   notifier.notify({
     title,
     message,
-    icon: 'E:/DEV/ICSNotifier/src/assets/FERI.png',
-    contentImage: `E:/DEV/ICSNotifier/src/assets/FERI.png`
+    icon: path.join(__dirname, "/assets/FERI.png"),
+    appID: "ICSNotifier"
   });
 }
 
@@ -40,7 +41,7 @@ function removeBadEvents(cal: ICSParsedData, filter: Array<string>) {
   });
 }
 
-const triggerFileUpdateReminder = () => notify("ICSNotifier", "Next class wasn't found. Update the schedule file.");
+const triggerFileUpdateReminder = () => notify("Empty schedule", "Next class wasn't found. Update the schedule file.");
 
 const triggerNextEvent = (event: ICSDataObject, diff: number) => notify(event.summary, `Event is starting in ${diff} minutes.`);
 
