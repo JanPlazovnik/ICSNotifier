@@ -7,7 +7,7 @@
     "dev": "tsnd -r dotenv/config src/index",
     "start:dev": "node -r dotenv/config src/index",
     "start": "node -r dotenv/config dist/index.js",
-    "build": "tsc && cp -R ./src/files ./dist/files"
+    "build": "tsc && ./build.sh"
   },
   "keywords": [],
   "author": "",
