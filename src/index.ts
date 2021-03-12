@@ -1,27 +1,9 @@
-import path from "path";
-import ical from "ical";
 import moment from "moment";
-import { WindowsToaster } from "node-notifier";
 import { ICSParsedData, ICSDataObject } from './interfaces';
+import { fetchParsedICS, notify, log } from './utils';
 
-const notifier = new WindowsToaster();
 const refreshTime = process.env.INTERVAL && parseInt(process.env.INTERVAL) || 5;
-
-let ICSData = Object.values(ical.parseFile(path.resolve(__dirname) + "/files/calendar.ics")) as ICSParsedData;
-
-function log(message: string) {
-  console.log(`${(moment().format("LLL"))} - ${message}`);
-}
-
-function notify(title: string, message: string) {
-  log(`${title}: ${message}`);
-  notifier.notify({
-    title,
-    message,
-    icon: path.join(__dirname, "/assets/FERI.png"),
-    appID: "ICSNotifier"
-  });
-}
+let ICSData = [] as ICSParsedData;
 
 function removePastEvents(cal: ICSParsedData) {
   return cal.filter(item => {
@@ -60,6 +42,11 @@ function checkNextEvent() {
     triggerNextEvent(currentItem, diff);
 }
 
-// initial run
-checkNextEvent();
-setInterval(() => checkNextEvent(), refreshTime * 60 * 1000);
+try {
+  ICSData = fetchParsedICS();
+  checkNextEvent();
+  setInterval(() => checkNextEvent(), refreshTime * 60 * 1000);
+}
+catch (error) {
+  notify("Error", error.message);
+}
