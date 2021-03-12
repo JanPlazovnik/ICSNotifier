@@ -17,7 +17,6 @@ function notify(title: string, message: string) {
   notifier.notify({
     title,
     message,
-    subtitle: "lol",
     icon: 'E:/DEV/ICSNotifier/src/assets/FERI.png',
     contentImage: `E:/DEV/ICSNotifier/src/assets/FERI.png`
   });
@@ -48,7 +47,6 @@ const triggerNextEvent = (event: ICSDataObject, diff: number) => notify(event.su
 function checkNextEvent() {
   const groups = ["RIT 1 VS", "RIT 1 VS RV 2", "RIT 1 VS RV2"];
   ICSData = removeBadEvents(removePastEvents(ICSData), groups);
-  ICSData = [];
   if (ICSData.length <= 0) return triggerFileUpdateReminder();
 
   const currentItem = ICSData[0];
