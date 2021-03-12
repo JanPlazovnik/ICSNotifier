@@ -8,7 +8,22 @@ const refreshTime = process.env.INTERVAL && parseInt(process.env.INTERVAL) || 5;
 
 let ICSData = Object.values(ical.parseFile(path.resolve(__dirname) + "/files/calendar.ics")) as ICSParsedData;
 
-function removePastEvents (cal: ICSParsedData) {
+function log(message: string) {
+  console.log(`${(moment().format("LLL"))} - ${message}`);
+}
+
+function notify(title: string, message: string) {
+  log(`${title}: ${message}`);
+  notifier.notify({
+    title,
+    message,
+    subtitle: "lol",
+    icon: 'E:/DEV/ICSNotifier/src/assets/FERI.png',
+    contentImage: `E:/DEV/ICSNotifier/src/assets/FERI.png`
+  });
+}
+
+function removePastEvents(cal: ICSParsedData) {
   return cal.filter(item => {
     const start = moment(item.start);
     const current = moment();
@@ -17,43 +32,27 @@ function removePastEvents (cal: ICSParsedData) {
   });
 }
 
-function removeBadEvents (cal: ICSParsedData, filter: Array<string>) {
+function removeBadEvents(cal: ICSParsedData, filter: Array<string>) {
   return cal.filter(item => {
-    const event = item.description.split(",").pop()?.trim();
-    for (const f of filter) {
-      if (event == f) return true;
+    const eventGroup = item.description.split(",").pop()?.trim();
+    for (const allowedGroup of filter) {
+      if (eventGroup == allowedGroup) return true;
     }
-  })
-}
-
-function triggerFileUpdateReminder () {
-  log("Data is empty.");
-  notifier.notify({
-    title: "ICSNotifier",
-    message: "The parsed ICS data is empty."
   });
 }
 
-function triggerNextEvent (event: ICSDataObject, diff: number) {
-  const message = `Event ${event.summary} is starting in ${diff} minutes.`;
-  log(message);
-  notifier.notify({
-    title: event.summary,
-    message
-  });
-}
+const triggerFileUpdateReminder = () => notify("ICSNotifier", "Next class wasn't found. Update the schedule file.");
 
-function log(message: string | object) {
-  console.log(`${(moment().format("LLL"))} - ${message}`);
-}
+const triggerNextEvent = (event: ICSDataObject, diff: number) => notify(event.summary, `Event is starting in ${diff} minutes.`);
 
-function checkNextEvent () {
-  log("Checking events...");
-  ICSData = removeBadEvents(removePastEvents(ICSData), ["RIT 1 VS", "RIT 1 VS RV 2"]);
+function checkNextEvent() {
+  const groups = ["RIT 1 VS", "RIT 1 VS RV 2", "RIT 1 VS RV2"];
+  ICSData = removeBadEvents(removePastEvents(ICSData), groups);
+  ICSData = [];
   if (ICSData.length <= 0) return triggerFileUpdateReminder();
 
   const currentItem = ICSData[0];
-  log(`Processing: ${currentItem.summary}`)
+  log(`Next up: ${currentItem.summary}`);
   const start = moment(currentItem.start);
   const current = moment();
   const diff = start.diff(current, 'm');
