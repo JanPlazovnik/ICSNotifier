@@ -1,9 +1,14 @@
 export interface ICSDataObject {
-  uid: string;
-  summary: string;
-  description: string;
-  start: Date;
-  end: Date;
+    uid: string;
+    summary: string;
+    description: string;
+    location: string;
+    start: Date;
+    end: Date;
+
+    params?: string[];
+    dtstamp?: Date;
+    type?: string;
 }
 
-export type ICSParsedData = Array<ICSDataObject>;
+export type WeeklySchedule = {[key: string]: ICSDataObject[]}
