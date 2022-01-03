@@ -2,8 +2,11 @@ import dayjs from "dayjs";
 import express from "express";
 import {ICSDataObject, WeeklySchedule} from './interfaces';
 import { fetchParsedICS, notify, log, weekdays } from './utils';
+import * as fs from "fs";
+import bodyParser from "body-parser";
 
 const app = express();
+app.use(bodyParser.json())
 const refreshTime = process.env.INTERVAL && parseInt(process.env.INTERVAL) || 5;
 // const activeGroups = ["RIT 2 VS", ""];
 const activeGroups: string[] = [];
@@ -90,4 +93,31 @@ app.get("/api/schedule/day/:name", (req, res) => {
     return res.json(splitSchedule(fetchParsedICS())[req.params.name] ?? []);
 })
 
-app.listen(3000);
+// Mock Database
+const attendanceData = JSON.parse(fs.readFileSync(__dirname + "/data.json", "utf-8")) as {[key: string]: any}
+
+app.get("/api/users/:id/attendance", (req, res) => {
+    const data = attendanceData[req.params.id]
+    if (data) {
+        return res.status(200).json(data)
+    }
+    return res.status(404).send()
+})
+app.post("/api/users/:id/attendance", (req, res) => {
+    const {status, eventId} = req.body
+    let userData = attendanceData[req.params.id]
+    if (!userData) {
+        userData = attendanceData[req.params.id] = []
+    }
+    userData.push({
+        timestamp: +new Date(),
+        status,
+        eventId
+    })
+    fs.writeFileSync(__dirname + "/data.json", JSON.stringify(attendanceData, null, 4));
+    return res.status(200).json(userData)
+})
+app.put("/api/users/:id/attendance/:att_id", (req, res) => {})
+app.delete("/api/users/:id/attendance/:att_id", (req, res) => {})
+
+app.listen(3000, () => console.log("Running!"));
